@@ -128,6 +128,11 @@ echo "  Mode   : $($DRY_RUN && echo 'DRY RUN (nothing will be moved)' || echo 'L
 echo "──────────────────────────────────────────"
 echo ""
 
+if [[ "$COMPUTE_SIZES" != "off" ]]; then
+  echo "WARNING: --compute-sizes enabled. This can take hours on large project trees."
+  echo ""
+fi
+
 # ── Directories to clean (re-fetchable / regeneratable) ─────────────────────
 CLEAN_DIRS=(
   # Version control
@@ -245,10 +250,16 @@ echo "────────────────────────�
 if $DRY_RUN; then
   echo "  DRY RUN complete"
   echo "  Items found  : $MOVED_COUNT"
-  echo "  Space to free: $(human_size $TOTAL_KB)"
 else
   echo "  Cleanup complete"
   echo "  Items moved  : $MOVED_COUNT"
+fi
+if [[ "$COMPUTE_SIZES" != "off" ]]; then
+  if $DRY_RUN; then
+    echo "  Space to free: $(human_size $TOTAL_KB)"
+  else
+    echo "  Space freed  : $(human_size $TOTAL_KB)"
+  fi
 fi
 echo "──────────────────────────────────────────"
 
