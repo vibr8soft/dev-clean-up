@@ -7,7 +7,7 @@ Files are **moved** to an output folder preserving their relative path, so you c
 ## Usage
 
 ```bash
-./dev-cleanup.sh <source_dir> [output_dir] [--dry-run]
+./dev-cleanup.sh <source_dir> [output_dir] [--dry-run] [--compute-sizes[=all]]
 ```
 
 ### Options
@@ -17,49 +17,78 @@ Files are **moved** to an output folder preserving their relative path, so you c
 | `source_dir` | Root folder containing your projects (required) | — |
 | `output_dir` | Where artifacts are moved to | `./cleanup-output` |
 | `--dry-run` | Preview what would be moved without touching anything | off |
+| `--compute-sizes` | Compute and display disk space used by each matched directory. Slow on large trees. | off |
+| `--compute-sizes=all` | Like `--compute-sizes` but also computes sizes for individual files | off |
 | `--help`, `-h` | Show help | — |
 
 ### Examples
 
 ```bash
-# 1. Preview first (recommended) — shows each item with its size and total space to free
+# 1. Quick preview — just lists what would be moved
 ./dev-cleanup.sh ~/projects --dry-run
 
-# 2. Run for real — artifacts go to ./cleanup-output
+# 2. Preview with sizes (slow on large trees)
+./dev-cleanup.sh ~/projects --dry-run --compute-sizes
+
+# 3. Run for real — artifacts go to ./cleanup-output
 ./dev-cleanup.sh ~/projects
 
-# 3. Custom output location
+# 4. Run with size tracking
+./dev-cleanup.sh ~/projects --compute-sizes
+
+# 5. Custom output location
 ./dev-cleanup.sh ~/projects ~/backup/dev-artifacts
 
-# 4. Flags can go in any position
+# 6. Flags can go in any position
 ./dev-cleanup.sh --dry-run ~/projects ~/backup/dev-artifacts
 ```
 
-### Dry-run vs live mode
+### Modes and size computation
 
-**`--dry-run`** calculates the disk usage of every matched directory (`du -sk`), so it can tell you exactly how much space each folder is eating and the total you'd reclaim. The trade-off is that it's **slow** on large project trees — walking millions of files to compute sizes takes time.
+Both `--dry-run` and live mode are fast by default — neither computes disk sizes.
 
-**Live mode** (no flag) skips size calculation entirely and just moves items as fast as possible. You won't get a per-folder size breakdown, but the cleanup itself will be significantly faster.
+Add `--compute-sizes` to enable size calculation. This runs `du -sk` on every matched directory, which can **take hours on large project trees**. Use `--compute-sizes=all` to also compute sizes for individual files (`.pyc`, `.DS_Store`, etc.).
 
-| | Dry-run | Live |
-|---|---|---|
-| **Speed** | Slow (computes sizes) | Fast (just moves) |
-| **Per-folder size** | Yes | No |
-| **Total space saved** | Shown in summary | Not tracked |
-| **Moves files** | No | Yes |
-
-**Recommendation:** run `--dry-run` once to identify what's taking up space, then run live to actually clean up.
+| | Default | `--compute-sizes` | `--compute-sizes=all` |
+|---|---|---|---|
+| **Dir sizes** | No | Yes | Yes |
+| **File sizes** | No | No | Yes |
+| **Total space** | Not tracked | Shown in summary | Shown in summary |
+| **Speed** | Fast | Slow (runs `du`) | Slow (runs `du`) |
 
 ### Dry-run output
 
+**Without `--compute-sizes`:**
+
 ```
+=== Directories ===
+  [DRY RUN] my-app/node_modules
+  [DRY RUN] api/.venv
+  [DRY RUN] ios-app/DerivedData
+
+=== Files ===
+  [DRY RUN] utils/__pycache__/helpers.cpython-311.pyc
+
+──────────────────────────────────────────
+  DRY RUN complete
+  Items found  : 4
+──────────────────────────────────────────
+
+  Run without --dry-run to execute.
+```
+
+**With `--compute-sizes`:**
+
+```
+WARNING: --compute-sizes enabled. This can take hours on large project trees.
+
 === Directories ===
   [DRY RUN] 245.3 MB   my-app/node_modules
   [DRY RUN] 18.7 MB    api/.venv
   [DRY RUN] 1.2 GB     ios-app/DerivedData
 
 === Files ===
-  [DRY RUN] 4 KB       utils/__pycache__/helpers.cpython-311.pyc
+  [DRY RUN] utils/__pycache__/helpers.cpython-311.pyc
 
 ──────────────────────────────────────────
   DRY RUN complete
