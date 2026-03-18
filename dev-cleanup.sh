@@ -77,6 +77,7 @@ human_size() {
 
 move_item() {
   local item="$1"
+  local item_type="${2:-dir}"  # "dir" or "file"
   [[ -e "$item" ]] || return 0
 
   local rel="${item#"$SOURCE"/}"
@@ -84,15 +85,34 @@ move_item() {
   local dest_parent
   dest_parent="$(dirname "$dest")"
 
-  if $DRY_RUN; then
-    local size
+  # Decide whether to compute size for this item
+  local show_size=false
+  if [[ "$COMPUTE_SIZES" == "all" ]]; then
+    show_size=true
+  elif [[ "$COMPUTE_SIZES" == "dirs" && "$item_type" == "dir" ]]; then
+    show_size=true
+  fi
+
+  local size=0
+  if $show_size; then
     size=$(du -sk "$item" 2>/dev/null | cut -f1) || size=0
-    printf "  [DRY RUN] %-10s %s\n" "$(human_size "$size")" "$rel"
     TOTAL_KB=$((TOTAL_KB + size))
+  fi
+
+  if $DRY_RUN; then
+    if $show_size; then
+      printf "  [DRY RUN] %-10s %s\n" "$(human_size "$size")" "$rel"
+    else
+      printf "  [DRY RUN] %s\n" "$rel"
+    fi
   else
     mkdir -p "$dest_parent"
     mv "$item" "$dest"
-    printf "  moved     %s\n" "$rel"
+    if $show_size; then
+      printf "  moved     %-10s %s\n" "$(human_size "$size")" "$rel"
+    else
+      printf "  moved     %s\n" "$rel"
+    fi
   fi
 
   MOVED_COUNT=$((MOVED_COUNT + 1))
