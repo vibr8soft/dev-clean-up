@@ -212,14 +212,14 @@ for dirname in "${CLEAN_DIRS[@]}"; do
   while IFS= read -r -d '' match; do
     # Skip anything inside the output directory
     [[ "$match" == "$OUTPUT"* ]] && continue
-    move_item "$match"
+    move_item "$match" "dir"
   done < <(find "$SOURCE" -name "$dirname" -type d -prune -print0 2>/dev/null || true)
 done
 
 # ── Egg-info directories (glob pattern) ─────────────────────────────────────
 while IFS= read -r -d '' match; do
   [[ "$match" == "$OUTPUT"* ]] && continue
-  move_item "$match"
+  move_item "$match" "dir"
 done < <(find "$SOURCE" -name "*.egg-info" -type d -prune -print0 2>/dev/null || true)
 
 # ── Individual files to clean ────────────────────────────────────────────────
@@ -235,7 +235,7 @@ echo "=== Files ==="
 for pattern in "${CLEAN_FILES[@]}"; do
   while IFS= read -r -d '' match; do
     [[ "$match" == "$OUTPUT"* ]] && continue
-    move_item "$match"
+    move_item "$match" "file"
   done < <(find "$SOURCE" -name "$pattern" -not -type d -print0 2>/dev/null || true)
 done
 
