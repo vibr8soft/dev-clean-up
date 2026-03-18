@@ -77,19 +77,18 @@ move_item() {
   local dest_parent
   dest_parent="$(dirname "$dest")"
 
-  local size
-  size=$(du -sk "$item" 2>/dev/null | cut -f1) || size=0
-
   if $DRY_RUN; then
+    local size
+    size=$(du -sk "$item" 2>/dev/null | cut -f1) || size=0
     printf "  [DRY RUN] %-10s %s\n" "$(human_size "$size")" "$rel"
+    TOTAL_KB=$((TOTAL_KB + size))
   else
     mkdir -p "$dest_parent"
     mv "$item" "$dest"
-    printf "  moved     %-10s %s\n" "$(human_size "$size")" "$rel"
+    printf "  moved     %s\n" "$rel"
   fi
 
   MOVED_COUNT=$((MOVED_COUNT + 1))
-  TOTAL_KB=$((TOTAL_KB + size))
 }
 
 # ── Banner ───────────────────────────────────────────────────────────────────
@@ -223,7 +222,6 @@ if $DRY_RUN; then
 else
   echo "  Cleanup complete"
   echo "  Items moved  : $MOVED_COUNT"
-  echo "  Space freed  : $(human_size $TOTAL_KB)"
 fi
 echo "──────────────────────────────────────────"
 

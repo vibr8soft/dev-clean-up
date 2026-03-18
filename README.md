@@ -35,9 +35,22 @@ Files are **moved** to an output folder preserving their relative path, so you c
 ./dev-cleanup.sh --dry-run ~/projects ~/backup/dev-artifacts
 ```
 
-### Dry-run output
+### Dry-run vs live mode
 
-In `--dry-run` mode, every item is listed with its human-readable size (KB / MB / GB) and the summary shows the **total space that would be freed**:
+**`--dry-run`** calculates the disk usage of every matched directory (`du -sk`), so it can tell you exactly how much space each folder is eating and the total you'd reclaim. The trade-off is that it's **slow** on large project trees — walking millions of files to compute sizes takes time.
+
+**Live mode** (no flag) skips size calculation entirely and just moves items as fast as possible. You won't get a per-folder size breakdown, but the cleanup itself will be significantly faster.
+
+| | Dry-run | Live |
+|---|---|---|
+| **Speed** | Slow (computes sizes) | Fast (just moves) |
+| **Per-folder size** | Yes | No |
+| **Total space saved** | Shown in summary | Not tracked |
+| **Moves files** | No | Yes |
+
+**Recommendation:** run `--dry-run` once to identify what's taking up space, then run live to actually clean up.
+
+### Dry-run output
 
 ```
 === Directories ===
@@ -55,6 +68,23 @@ In `--dry-run` mode, every item is listed with its human-readable size (KB / MB 
 ──────────────────────────────────────────
 
   Run without --dry-run to execute.
+```
+
+### Live output
+
+```
+=== Directories ===
+  moved     my-app/node_modules
+  moved     api/.venv
+  moved     ios-app/DerivedData
+
+=== Files ===
+  moved     utils/__pycache__/helpers.cpython-311.pyc
+
+──────────────────────────────────────────
+  Cleanup complete
+  Items moved  : 4
+──────────────────────────────────────────
 ```
 
 ### Output structure
