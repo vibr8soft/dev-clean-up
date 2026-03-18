@@ -15,10 +15,17 @@ set -euo pipefail
 SOURCE=""
 OUTPUT=""
 DRY_RUN=false
+COMPUTE_SIZES="off"
 
 for arg in "$@"; do
   case "$arg" in
     --dry-run) DRY_RUN=true ;;
+    --compute-sizes) COMPUTE_SIZES="dirs" ;;
+    --compute-sizes=all) COMPUTE_SIZES="all" ;;
+    --compute-sizes=*)
+      echo "Error: invalid value for --compute-sizes. Use --compute-sizes or --compute-sizes=all"
+      exit 1
+      ;;
     --help|-h)
       sed -n '2,9s/^# //p' "$0"
       exit 0
