@@ -2,11 +2,12 @@
 # dev-cleanup.sh — Move re-fetchable dev artifacts out of a project tree.
 #
 # Usage:
-#   ./dev-cleanup.sh <source_dir> [output_dir] [--dry-run]
+#   ./dev-cleanup.sh <source_dir> [output_dir] [--dry-run] [--compute-sizes[=all]]
 #
 # Examples:
 #   ./dev-cleanup.sh ~/projects --dry-run              # preview what would move
 #   ./dev-cleanup.sh ~/projects                        # moves to ./cleanup-output
+#   ./dev-cleanup.sh ~/projects --dry-run --compute-sizes  # preview with sizes
 #   ./dev-cleanup.sh ~/projects ~/backup/dev-artifacts # custom output dir
 
 set -euo pipefail
@@ -27,7 +28,7 @@ for arg in "$@"; do
       exit 1
       ;;
     --help|-h)
-      sed -n '2,9s/^# //p' "$0"
+      sed -n '2,10s/^# //p' "$0"
       exit 0
       ;;
     *)
