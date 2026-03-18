@@ -57,6 +57,17 @@ fi
 MOVED_COUNT=0
 TOTAL_KB=0
 
+human_size() {
+  local kb=$1
+  if (( kb >= 1048576 )); then
+    awk "BEGIN {printf \"%.1f GB\", $kb / 1048576}"
+  elif (( kb >= 1024 )); then
+    awk "BEGIN {printf \"%.1f MB\", $kb / 1024}"
+  else
+    printf "%d KB" "$kb"
+  fi
+}
+
 move_item() {
   local item="$1"
   [[ -e "$item" ]] || return 0
@@ -70,26 +81,15 @@ move_item() {
   size=$(du -sk "$item" 2>/dev/null | cut -f1) || size=0
 
   if $DRY_RUN; then
-    printf "  [DRY RUN] %-10s %s\n" "${size}K" "$rel"
+    printf "  [DRY RUN] %-10s %s\n" "$(human_size "$size")" "$rel"
   else
     mkdir -p "$dest_parent"
     mv "$item" "$dest"
-    printf "  moved     %-10s %s\n" "${size}K" "$rel"
+    printf "  moved     %-10s %s\n" "$(human_size "$size")" "$rel"
   fi
 
   MOVED_COUNT=$((MOVED_COUNT + 1))
   TOTAL_KB=$((TOTAL_KB + size))
-}
-
-human_size() {
-  local kb=$1
-  if (( kb >= 1048576 )); then
-    awk "BEGIN {printf \"%.1f GB\", $kb / 1048576}"
-  elif (( kb >= 1024 )); then
-    awk "BEGIN {printf \"%.1f MB\", $kb / 1024}"
-  else
-    printf "%d KB" "$kb"
-  fi
 }
 
 # ── Banner ───────────────────────────────────────────────────────────────────
@@ -218,11 +218,13 @@ echo ""
 echo "──────────────────────────────────────────"
 if $DRY_RUN; then
   echo "  DRY RUN complete"
+  echo "  Items found  : $MOVED_COUNT"
+  echo "  Space to free: $(human_size $TOTAL_KB)"
 else
   echo "  Cleanup complete"
+  echo "  Items moved  : $MOVED_COUNT"
+  echo "  Space freed  : $(human_size $TOTAL_KB)"
 fi
-echo "  Items moved : $MOVED_COUNT"
-echo "  Space       : $(human_size $TOTAL_KB)"
 echo "──────────────────────────────────────────"
 
 if $DRY_RUN && (( MOVED_COUNT > 0 )); then

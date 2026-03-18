@@ -22,7 +22,7 @@ Files are **moved** to an output folder preserving their relative path, so you c
 ### Examples
 
 ```bash
-# 1. Preview first (recommended)
+# 1. Preview first (recommended) — shows each item with its size and total space to free
 ./dev-cleanup.sh ~/projects --dry-run
 
 # 2. Run for real — artifacts go to ./cleanup-output
@@ -33,6 +33,28 @@ Files are **moved** to an output folder preserving their relative path, so you c
 
 # 4. Flags can go in any position
 ./dev-cleanup.sh --dry-run ~/projects ~/backup/dev-artifacts
+```
+
+### Dry-run output
+
+In `--dry-run` mode, every item is listed with its human-readable size (KB / MB / GB) and the summary shows the **total space that would be freed**:
+
+```
+=== Directories ===
+  [DRY RUN] 245.3 MB   my-app/node_modules
+  [DRY RUN] 18.7 MB    api/.venv
+  [DRY RUN] 1.2 GB     ios-app/DerivedData
+
+=== Files ===
+  [DRY RUN] 4 KB       utils/__pycache__/helpers.cpython-311.pyc
+
+──────────────────────────────────────────
+  DRY RUN complete
+  Items found  : 4
+  Space to free: 1.5 GB
+──────────────────────────────────────────
+
+  Run without --dry-run to execute.
 ```
 
 ### Output structure
